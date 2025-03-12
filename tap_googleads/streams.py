@@ -114,7 +114,7 @@ class CustomerHierarchyStream(GoogleAdsStream):
         if customer_ids is None:
             customer = record["customerClient"]
 
-            if customer["manager"]:
+            if customer["manager"] or customer["level"] == 0:
                 self.logger.warning(
                     "%s is a manager, skipping",
                     customer["clientCustomer"],
