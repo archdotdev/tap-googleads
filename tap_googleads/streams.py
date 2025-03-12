@@ -73,6 +73,7 @@ class CustomerHierarchyStream(GoogleAdsStream):
           customer_client.time_zone,
           customer_client.id
         FROM customer_client
+        WHERE customer_client.level <= 1
 	"""
 
     records_jsonpath = "$.results[*]"
