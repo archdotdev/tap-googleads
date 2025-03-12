@@ -73,7 +73,6 @@ class CustomerHierarchyStream(GoogleAdsStream):
           customer_client.time_zone,
           customer_client.id
         FROM customer_client
-        WHERE customer_client.level <= 1
 	"""
 
     records_jsonpath = "$.results[*]"
@@ -95,6 +94,7 @@ class CustomerHierarchyStream(GoogleAdsStream):
                 th.Property("descriptiveName", th.StringType),
                 th.Property("currencyCode", th.StringType),
                 th.Property("id", th.StringType),
+                th.Property("parent_customer_id", th.StringType),
             ),
         ),
     ).to_dict()
@@ -132,7 +132,13 @@ class CustomerHierarchyStream(GoogleAdsStream):
 
         # sync only customers we haven't seen
         customer_ids = set(customer_ids) - self.seen_customer_ids
-        yield from ({"customer_id": customer_id} for customer_id in customer_ids)
+
+        for customer_id in customer_ids:
+            customer_context = {"customer_id": customer_id}
+            # Add parent manager account id if this is a child   
+            if customer_id != context['customer_id']:
+                customer_context['parent_customer_id'] = context['customer_id']
+            yield customer_context
 
         self.seen_customer_ids.update(customer_ids)
 

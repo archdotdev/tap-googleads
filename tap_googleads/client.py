@@ -98,6 +98,15 @@ class GoogleAdsStream(RESTStream):
             auth_headers=auth_headers,
         )
 
+    def _get_login_customer_id(self, context):
+        if self.login_customer_id:
+            return self.login_customer_id
+        if context:
+            if context.get("parent_customer_id"):
+                return context.get("parent_customer_id")
+            return context.get("customer_id")
+        return None
+
     @property
     def http_headers(self) -> dict:
         """Return the http headers needed."""
@@ -105,11 +114,7 @@ class GoogleAdsStream(RESTStream):
         if "user_agent" in self.config:
             headers["User-Agent"] = self.config.get("user_agent")
         headers["developer-token"] = self.config["developer_token"]
-        headers["login-customer-id"] = (
-            self.login_customer_id
-            or self.context
-            and self.context.get("customer_id")
-        )
+        headers["login-customer-id"] = self._get_login_customer_id(self.context)
         return headers
 
     def get_url_params(
