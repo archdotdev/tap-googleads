@@ -71,7 +71,7 @@ class CustomQueryStream(ReportsStream):
         try:
             query_object = sqlparse.parse(self.custom_query["query"])[0]
         except ValueError:
-            message = f"The custom GAQL query {self.custom_query['name']} failed. Validate your GAQL query with the Google Ads query validator. https://developers.google.com/google-ads/api/fields/v13/query_validator"
+            message = f"The custom GAQL query {self.custom_query['name']} failed. Validate your GAQL query with the Google Ads query validator. https://developers.google.com/google-ads/api/fields/v19/query_validator"
             raise Exception(message)
 
         fields = []
