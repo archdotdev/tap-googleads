@@ -2,6 +2,7 @@ from functools import cached_property
 from types import SimpleNamespace
 from typing import Any, List, Mapping
 
+import humps
 import requests
 import sqlparse
 
@@ -99,9 +100,31 @@ class CustomQueryStream(ReportsStream):
 
             if node.is_repeated:
                 field_value = {"type": ["null", "array"], "items": field_value}
-            local_json_schema["properties"][field] = field_value
 
+            # GAQL fields look like metrics.cost_micros and response looks like
+            # {'metrics': {'costMicros': 1000000}} which gets converted to metrics__costMicros
+            field_name = "__".join([humps.camelize(i) for i in field.split(".")])
+            local_json_schema["properties"][field_name] = field_value
+        # These are always present in the response
+        local_json_schema["properties"]["customer_id"] = {"type": ["string", "null"]}
+        local_json_schema["properties"]["campaign__resourceName"] = {
+            "type": ["string", "null"]
+        }
         return local_json_schema
+
+    def post_process(  # noqa: PLR6301
+        self,
+        row,
+        context=None,
+    ) -> dict | None:
+        # TODO: flatten manually 2 levels deep
+        new_row = row.copy()
+        for key, value in row.items():
+            if isinstance(value, dict):
+                for k, v in value.items():
+                    new_row[f"{key}__{k}"] = v
+                del new_row[key]
+        return new_row
 
     def get_fields_metadata(self, fields: List[str]) -> Mapping[str, Any]:
         """
