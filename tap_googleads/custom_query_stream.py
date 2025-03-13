@@ -96,7 +96,7 @@ class CustomQueryStream(ReportsStream):
 
         for field in fields:
             node = google_schema.get(field)
-            google_data_type = node.data_type.name
+            google_data_type = node.data_type
             field_value = {
                 "type": [
                     google_datatype_mapping.get(google_data_type, "string"),
@@ -161,11 +161,7 @@ class CustomQueryStream(ReportsStream):
         for item in response_data.get("results", []):
             field = SimpleNamespace()
             field.name = item.get("name")
-            data_type_str = item.get("dataType", "")
-            field.data_type = SimpleNamespace()
-            field.data_type.name = data_type_str.replace(
-                "GOOGLE_ADS_FIELD_DATA_TYPE_", ""
-            )
+            field.data_type = item.get("dataType", "")
             field.enum_values = item.get("enumValues", [])
             field.is_repeated = item.get("isRepeated", False)
             result[field.name] = field
