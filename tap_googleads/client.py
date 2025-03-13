@@ -102,9 +102,7 @@ class GoogleAdsStream(RESTStream):
         if self.login_customer_id:
             return self.login_customer_id
         if context:
-            if context.get("parent_customer_id"):
-                return context.get("parent_customer_id")
-            return context.get("customer_id")
+            return context.get("parent_customer_id") or context.get("customer_id")
         return None
 
     @property
