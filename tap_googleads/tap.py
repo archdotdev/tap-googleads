@@ -137,9 +137,9 @@ class TapGoogleAds(Tap):
                         description="A custom defined GAQL query for building the report. Do not include segments.date filter in the query, it is automatically added. For more information, refer to <a href=\"https://developers.google.com/google-ads/api/fields/v19/overview_query_builder\">Google's documentation</a>.",
                     ),
                     th.Property(
-                        "table_name",
+                        "name",
                         th.StringType,
-                        description="The table name in your destination database for the chosen query.",
+                        description="The name to assign to the custom query stream.",
                     ),
                 ),
             ),
