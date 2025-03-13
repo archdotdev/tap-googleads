@@ -83,6 +83,7 @@ class CustomerHierarchyStream(GoogleAdsStream):
     parent_stream_type = AccessibleCustomers
     schema = th.PropertiesList(
         th.Property("customer_id", th.StringType),
+        th.Property("parent_customer_id", th.StringType),
         th.Property(
             "customerClient",
             th.ObjectType(
@@ -95,7 +96,6 @@ class CustomerHierarchyStream(GoogleAdsStream):
                 th.Property("descriptiveName", th.StringType),
                 th.Property("currencyCode", th.StringType),
                 th.Property("id", th.StringType),
-                th.Property("parent_customer_id", th.StringType),
             ),
         ),
     ).to_dict()
