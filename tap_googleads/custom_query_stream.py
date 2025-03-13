@@ -1,9 +1,9 @@
+from functools import cached_property
 from types import SimpleNamespace
 from typing import Any, List, Mapping
 
 import requests
 import sqlparse
-from singer_sdk import typing as th
 
 from tap_googleads.streams import ReportsStream
 
@@ -26,32 +26,19 @@ class CustomQueryStream(ReportsStream):
         self.custom_query = kwargs.pop("custom_query")
         self._query = self.custom_query["query"]
         self.name = self.custom_query["name"]
-        self._schema = {}
         super().__init__(*args, **kwargs)
 
     @property
     def gaql(self):
         return self._query
 
-    def get_records(self, context):
-        self._schema = self.schema
-        yield from super().get_records(context)
-
-    @property
+    @cached_property
     def schema(self) -> dict:
         """Return dictionary of record schema.
 
         Dynamically detect the json schema for the stream.
         This is evaluated prior to any records being retrieved.
         """
-        # Lazy evaluating so we have a customer ID to make requests with
-        if not self.context:
-            return th.PropertiesList(
-                th.Property("Placeholder", th.StringType),
-            ).to_dict()
-        elif self._schema:
-            return self._schema
-
         local_json_schema = {
             "type": "object",
             "properties": {},
@@ -112,11 +99,8 @@ class CustomQueryStream(ReportsStream):
 
             if node.is_repeated:
                 field_value = {"type": ["null", "array"], "items": field_value}
-
             local_json_schema["properties"][field] = field_value
 
-        # Set the schema instance var so its cached later
-        self._schema = local_json_schema
         return local_json_schema
 
     def get_fields_metadata(self, fields: List[str]) -> Mapping[str, Any]:
@@ -128,7 +112,7 @@ class CustomQueryStream(ReportsStream):
 
         Args:
             fields: List of columns for user defined query.
-        
+
         Returns:
             dict: Field metadata for custom query columns.
         """
@@ -146,11 +130,11 @@ class CustomQueryStream(ReportsStream):
 
         payload = {"query": query, "pageSize": len(fields)}
 
+        self.authenticator.update_access_token()
         headers = {
             "Authorization": f"Bearer {self.authenticator.access_token}",
             "Content-Type": "application/json",
             "developer-token": self.config["developer_token"],
-            "login-customer-id": self.context["customer_id"],
         }
         response = requests.post(base_url, json=payload, headers=headers)
         response.raise_for_status()
