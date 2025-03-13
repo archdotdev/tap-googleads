@@ -121,11 +121,16 @@ class CustomQueryStream(ReportsStream):
 
     def get_fields_metadata(self, fields: List[str]) -> Mapping[str, Any]:
         """
-        Issue Google API request to get detailed information on data type for custom query columns.
-        Uses direct REST API calls instead of the Google Ads client.
+        Get field metadata for custom query columns.
 
-        :params fields list of columns for user defined query.
-        :return dict of fields type info.
+        Issue Google API request to get detailed information on data type for custom query columns.
+        Uses direct REST API calls.
+
+        Args:
+            fields: List of columns for user defined query.
+        
+        Returns:
+            dict: Field metadata for custom query columns.
         """
         base_url = f"{self.url_base}/googleAdsFields:search"
 
