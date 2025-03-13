@@ -115,6 +115,8 @@ class CustomQueryStream(ReportsStream):
 
             local_json_schema["properties"][field] = field_value
 
+        # Set the schema instance var so its cached later
+        self._schema = local_json_schema
         return local_json_schema
 
     def get_fields_metadata(self, fields: List[str]) -> Mapping[str, Any]:
