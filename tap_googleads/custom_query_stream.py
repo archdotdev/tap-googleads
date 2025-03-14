@@ -5,6 +5,7 @@ from typing import Any, List, Mapping
 import humps
 import requests
 import sqlparse
+from singer_sdk.helpers._flattening import flatten_record
 
 from tap_googleads.streams import ReportsStream
 
@@ -129,16 +130,16 @@ class CustomQueryStream(ReportsStream):
         row,
         context=None,
     ) -> dict | None:
-        new_row = row.copy()
-        for key, value in row.items():
-            if isinstance(value, dict):
-                for k, v in value.items():
-                    new_key = f"{key}__{k}"
-                    new_row[new_key] = self._cast_value(new_key, v)
-                del new_row[key]
-            else:
-                new_row[key] = self._cast_value(key, value)
-        return new_row
+        flattened_row = flatten_record(
+            record=row,
+            flattened_schema=self.schema,
+            max_level=2,
+        )
+
+        for key, value in flattened_row.items():
+            flattened_row[key] = self._cast_value(key, value)
+
+        return flattened_row
 
     def get_fields_metadata(self, fields: List[str]) -> Mapping[str, Any]:
         """
