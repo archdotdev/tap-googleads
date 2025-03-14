@@ -12,6 +12,7 @@ from tap_googleads.dynamic_streams import (
     AdGroupsPerformance,
     AdGroupsStream,
     AudienceStream,
+    CampaignCriterionStream,
     CampaignPerformance,
     CampaignPerformanceByAgeRangeAndDevice,
     CampaignPerformanceByGenderAndDevice,
@@ -42,6 +43,7 @@ STREAM_TYPES = [
     AdGroupAdLabelStream,
     AudienceStream,
     UserInterestStream,
+    CampaignCriterionStream,
 ]
 
 CUSTOMER_ID_TYPE = th.StringType(pattern=r"^[0-9]{3}-?[0-9]{3}-?[0-9]{4}$")
