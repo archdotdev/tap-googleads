@@ -110,7 +110,7 @@ class CustomQueryStream(ReportsStream):
             # {'metrics': {'costMicros': 1000000}} which gets converted to metrics__costMicros
             field_name = "__".join([humps.camelize(i) for i in field.split(".")])
             local_json_schema["properties"][field_name] = field_value
-        # These are always present in the response
+        # This is always present in the response
         local_json_schema["properties"]["customer_id"] = {"type": ["string", "null"]}
         return local_json_schema
 
