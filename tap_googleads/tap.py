@@ -5,10 +5,9 @@ from typing import List
 
 from singer_sdk import Stream, Tap
 from singer_sdk import typing as th  # JSON schema typing helpers
-from tap_googleads.custom_query_stream import CustomQueryStream
 
-from tap_googleads.streams import (
-    AccessibleCustomers,
+from tap_googleads.custom_query_stream import CustomQueryStream
+from tap_googleads.dynamic_streams import (
     AdGroupsPerformance,
     AdGroupsStream,
     CampaignPerformance,
@@ -17,9 +16,12 @@ from tap_googleads.streams import (
     CampaignPerformanceByLocation,
     CampaignsStream,
     ClickViewReportStream,
-    CustomerHierarchyStream,
     GeoPerformance,
     GeotargetsStream,
+)
+from tap_googleads.streams import (
+    AccessibleCustomers,
+    CustomerHierarchyStream,
 )
 
 STREAM_TYPES = [
@@ -134,7 +136,7 @@ class TapGoogleAds(Tap):
                     th.Property(
                         "query",
                         th.StringType,
-                        description="A custom defined GAQL query for building the report. Do not include segments.date filter in the query, it is automatically added. For more information, refer to <a href=\"https://developers.google.com/google-ads/api/fields/v19/overview_query_builder\">Google's documentation</a>.",
+                        description='A custom defined GAQL query for building the report. Do not include segments.date filter in the query, it is automatically added. For more information, refer to <a href="https://developers.google.com/google-ads/api/fields/v19/overview_query_builder">Google\'s documentation</a>.',
                     ),
                     th.Property(
                         "name",
@@ -154,11 +156,13 @@ class TapGoogleAds(Tap):
 
         return super().setup_mapper()
 
-        
     def discover_streams(self) -> List[Stream]:
         """Return a list of discovered streams."""
         streams = [stream_class(tap=self) for stream_class in STREAM_TYPES]
         if self.config.get("enable_click_view_report_stream"):
             streams.append(ClickViewReportStream(tap=self))
-        streams.extend(CustomQueryStream(tap=self, custom_query=q) for q in self.config.get("custom_queries_array", []))
+        streams.extend(
+            CustomQueryStream(tap=self, custom_query=q)
+            for q in self.config.get("custom_queries_array", [])
+        )
         return streams
