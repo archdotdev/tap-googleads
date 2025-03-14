@@ -33,6 +33,10 @@ class CustomQueryStream(ReportsStream):
     def gaql(self):
         return self._query
 
+    def get_records(self, context):
+        foo = super().get_records(context)
+        yield from foo
+
     @cached_property
     def schema(self) -> dict:
         """Return dictionary of record schema.
@@ -112,18 +116,28 @@ class CustomQueryStream(ReportsStream):
         }
         return local_json_schema
 
+    def _cast_value(self, key: str, value: Any) -> Any:
+        # Some values, notably campaign__id, are returned as strings but the field
+        # data type from the API is integer. This function casts the value to the correct type.
+        if key in self.schema["properties"]:
+            if self.schema["properties"][key]["type"][0] == "integer":
+                return int(value)
+        return value
+
     def post_process(  # noqa: PLR6301
         self,
         row,
         context=None,
     ) -> dict | None:
-        # TODO: flatten manually 2 levels deep
         new_row = row.copy()
         for key, value in row.items():
             if isinstance(value, dict):
                 for k, v in value.items():
-                    new_row[f"{key}__{k}"] = v
+                    new_key = f"{key}__{k}"
+                    new_row[new_key] = self._cast_value(new_key, v)
                 del new_row[key]
+            else:
+                new_row[key] = self._cast_value(key, value)
         return new_row
 
     def get_fields_metadata(self, fields: List[str]) -> Mapping[str, Any]:
