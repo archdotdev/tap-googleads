@@ -1,5 +1,6 @@
 """Dynamic streams package for Google Ads tap."""
 
+from tap_googleads.dynamic_streams.ad_group_ad_label import AdGroupAdLabelStream
 from tap_googleads.dynamic_streams.ad_groups import AdGroupsStream
 from tap_googleads.dynamic_streams.ad_groups_performance import AdGroupsPerformance
 from tap_googleads.dynamic_streams.campaign_performance_by_age_range_and_device import (
@@ -18,6 +19,7 @@ from tap_googleads.dynamic_streams.geotargets import GeotargetsStream
 from tap_googleads.dynamic_streams.campaign_performance import CampaignPerformance
 
 __all__ = [
+    "AdGroupAdLabelStream",
     "AdGroupsPerformance",
     "AdGroupsStream", 
     "CampaignPerformance",

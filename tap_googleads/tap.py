@@ -8,6 +8,7 @@ from singer_sdk import typing as th  # JSON schema typing helpers
 
 from tap_googleads.custom_query_stream import CustomQueryStream
 from tap_googleads.dynamic_streams import (
+    AdGroupAdLabelStream,
     AdGroupsPerformance,
     AdGroupsStream,
     CampaignPerformance,
@@ -25,17 +26,18 @@ from tap_googleads.streams import (
 )
 
 STREAM_TYPES = [
-    CampaignsStream,
-    AdGroupsStream,
-    AdGroupsPerformance,
+    # CampaignsStream,
+    # AdGroupsStream,
+    # AdGroupsPerformance,
     AccessibleCustomers,
     CustomerHierarchyStream,
-    CampaignPerformance,
-    CampaignPerformanceByAgeRangeAndDevice,
-    CampaignPerformanceByGenderAndDevice,
-    CampaignPerformanceByLocation,
-    GeotargetsStream,
-    GeoPerformance,
+    # CampaignPerformance,
+    # CampaignPerformanceByAgeRangeAndDevice,
+    # CampaignPerformanceByGenderAndDevice,
+    # CampaignPerformanceByLocation,
+    # GeotargetsStream,
+    # GeoPerformance,
+    AdGroupAdLabelStream,
 ]
 
 CUSTOMER_ID_TYPE = th.StringType(pattern=r"^[0-9]{3}-?[0-9]{3}-?[0-9]{4}$")
