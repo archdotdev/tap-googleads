@@ -158,9 +158,7 @@ class TapGoogleAds(Tap):
     def discover_streams(self) -> List[Stream]:
         """Return a list of discovered streams."""
         streams = [stream_class(tap=self) for stream_class in STREAM_TYPES]
-        if self.config["enable_click_view_report_stream"]:
+        if self.config.get("enable_click_view_report_stream"):
             streams.append(ClickViewReportStream(tap=self))
-        if self.config["custom_queries_array"]:
-            for query in self.config["custom_queries_array"]:
-                streams.append(CustomQueryStream(tap=self, custom_query=query))
+        streams.extend(CustomQueryStream(tap=self, custom_query=q) for q in self.config.get("custom_queries_array", []))
         return streams
