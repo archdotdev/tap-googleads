@@ -2,8 +2,10 @@ from functools import cached_property
 from types import SimpleNamespace
 from typing import Any, List, Mapping
 
+import humps
 import requests
 import sqlparse
+from singer_sdk.helpers._flattening import flatten_record
 
 from tap_googleads.streams import ReportsStream
 
@@ -31,6 +33,10 @@ class CustomQueryStream(ReportsStream):
     @property
     def gaql(self):
         return self._query
+
+    def get_records(self, context):
+        foo = super().get_records(context)
+        yield from foo
 
     @cached_property
     def schema(self) -> dict:
@@ -99,9 +105,41 @@ class CustomQueryStream(ReportsStream):
 
             if node.is_repeated:
                 field_value = {"type": ["null", "array"], "items": field_value}
-            local_json_schema["properties"][field] = field_value
 
+            # GAQL fields look like metrics.cost_micros and response looks like
+            # {'metrics': {'costMicros': 1000000}} which gets converted to metrics__costMicros
+            field_name = "__".join([humps.camelize(i) for i in field.split(".")])
+            local_json_schema["properties"][field_name] = field_value
+        # These are always present in the response
+        local_json_schema["properties"]["customer_id"] = {"type": ["string", "null"]}
+        local_json_schema["properties"]["campaign__resourceName"] = {
+            "type": ["string", "null"]
+        }
         return local_json_schema
+
+    def _cast_value(self, key: str, value: Any) -> Any:
+        # Some values, notably campaign__id, are returned as strings but the field
+        # data type from the API is integer. This function casts the value to the correct type.
+        if key in self.schema["properties"]:
+            if self.schema["properties"][key]["type"][0] == "integer":
+                return int(value)
+        return value
+
+    def post_process(  # noqa: PLR6301
+        self,
+        row,
+        context=None,
+    ) -> dict | None:
+        flattened_row = flatten_record(
+            record=row,
+            flattened_schema=self.schema,
+            max_level=2,
+        )
+
+        for key, value in flattened_row.items():
+            flattened_row[key] = self._cast_value(key, value)
+
+        return flattened_row
 
     def get_fields_metadata(self, fields: List[str]) -> Mapping[str, Any]:
         """
