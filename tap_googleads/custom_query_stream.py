@@ -33,10 +33,6 @@ class CustomQueryStream(ReportsStream):
     def gaql(self):
         return self._query
 
-    def get_records(self, context):
-        foo = super().get_records(context)
-        yield from foo
-
     @cached_property
     def schema(self) -> dict:
         """Return dictionary of record schema.
