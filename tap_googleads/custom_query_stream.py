@@ -1,6 +1,5 @@
 from functools import cached_property
-from types import SimpleNamespace
-from typing import Any, List, Mapping
+from typing import Any, Dict, List
 
 import humps
 import requests
@@ -88,8 +87,8 @@ class CustomQueryStream(ReportsStream):
         google_schema = self.get_fields_metadata(fields)
 
         for field in fields:
-            node = google_schema.get(field)
-            google_data_type = node.data_type
+            node = google_schema[field]
+            google_data_type = node.get("dataType", "")
             field_value = {
                 "type": [
                     google_datatype_mapping.get(google_data_type, "string"),
@@ -101,9 +100,12 @@ class CustomQueryStream(ReportsStream):
                 field_value["format"] = "date"
 
             if google_data_type == "ENUM":
-                field_value = {"type": "string", "enum": list(node.enum_values)}
+                field_value = {
+                    "type": "string",
+                    "enum": list(node.get("enumValues", [])),
+                }
 
-            if node.is_repeated:
+            if node.get("isRepeated", False):
                 field_value = {"type": ["null", "array"], "items": field_value}
 
             # GAQL fields look like metrics.cost_micros and response looks like
@@ -138,7 +140,7 @@ class CustomQueryStream(ReportsStream):
 
         return flattened_row
 
-    def get_fields_metadata(self, fields: List[str]) -> Mapping[str, Any]:
+    def get_fields_metadata(self, fields: List[str]) -> Dict[str, Dict[str, Any]]:
         """
         Get field metadata for custom query columns.
 
@@ -175,14 +177,4 @@ class CustomQueryStream(ReportsStream):
         response.raise_for_status()
 
         response_data = response.json()
-
-        result = {}
-        for item in response_data.get("results", []):
-            field = SimpleNamespace()
-            field.name = item.get("name")
-            field.data_type = item.get("dataType", "")
-            field.enum_values = item.get("enumValues", [])
-            field.is_repeated = item.get("isRepeated", False)
-            result[field.name] = field
-
-        return result
+        return {item.get("name"): item for item in response_data.get("results", [])}
