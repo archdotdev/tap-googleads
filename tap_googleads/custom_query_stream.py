@@ -112,9 +112,6 @@ class CustomQueryStream(ReportsStream):
             local_json_schema["properties"][field_name] = field_value
         # These are always present in the response
         local_json_schema["properties"]["customer_id"] = {"type": ["string", "null"]}
-        local_json_schema["properties"]["campaign__resourceName"] = {
-            "type": ["string", "null"]
-        }
         return local_json_schema
 
     def _cast_value(self, key: str, value: Any) -> Any:
