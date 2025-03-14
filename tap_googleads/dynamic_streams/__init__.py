@@ -18,6 +18,7 @@ from tap_googleads.dynamic_streams.click_view_report import ClickViewReportStrea
 from tap_googleads.dynamic_streams.geo_performance import GeoPerformance
 from tap_googleads.dynamic_streams.geotargets import GeotargetsStream
 from tap_googleads.dynamic_streams.campaign_performance import CampaignPerformance
+from tap_googleads.dynamic_streams.user_interest import UserInterestStream
 
 __all__ = [
     "AdGroupAdLabelStream",
@@ -32,4 +33,5 @@ __all__ = [
     "ClickViewReportStream",
     "GeoPerformance",
     "GeotargetsStream",
+    "UserInterestStream",
 ]
