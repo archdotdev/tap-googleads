@@ -26,17 +26,17 @@ from tap_googleads.streams import (
 )
 
 STREAM_TYPES = [
-    # CampaignsStream,
-    # AdGroupsStream,
-    # AdGroupsPerformance,
+    CampaignsStream,
+    AdGroupsStream,
+    AdGroupsPerformance,
     AccessibleCustomers,
     CustomerHierarchyStream,
-    # CampaignPerformance,
-    # CampaignPerformanceByAgeRangeAndDevice,
-    # CampaignPerformanceByGenderAndDevice,
-    # CampaignPerformanceByLocation,
-    # GeotargetsStream,
-    # GeoPerformance,
+    CampaignPerformance,
+    CampaignPerformanceByAgeRangeAndDevice,
+    CampaignPerformanceByGenderAndDevice,
+    CampaignPerformanceByLocation,
+    GeotargetsStream,
+    GeoPerformance,
     AdGroupAdLabelStream,
 ]
 
