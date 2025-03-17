@@ -140,7 +140,7 @@ class TapGoogleAds(Tap):
             default=False,
         ),
         th.Property(
-            "custom_queries_array",
+            "custom_queries",
             th.ArrayType(
                 th.ObjectType(
                     th.Property(
