@@ -7,6 +7,7 @@ from tap_googleads.dynamic_streams.ad_groups_performance import AdGroupsPerforma
 from tap_googleads.dynamic_streams.audience import AudienceStream
 from tap_googleads.dynamic_streams.campaign_budget import CampaignBudgetStream
 from tap_googleads.dynamic_streams.campaign_criterion import CampaignCriterionStream
+from tap_googleads.dynamic_streams.campaign_label import CampaignLabelStream
 from tap_googleads.dynamic_streams.campaign_performance_by_age_range_and_device import (
     CampaignPerformanceByAgeRangeAndDevice,
 )
@@ -32,6 +33,7 @@ __all__ = [
     "AudienceStream",
     "CampaignBudgetStream",
     "CampaignCriterionStream",
+    "CampaignLabelStream",
     "CampaignPerformance",
     "CampaignPerformanceByAgeRangeAndDevice",
     "CampaignPerformanceByGenderAndDevice",
