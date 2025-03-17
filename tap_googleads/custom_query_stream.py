@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from tap_googleads.dynamic_query_stream import DynamicQueryStream
 
 
