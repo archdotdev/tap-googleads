@@ -8,6 +8,7 @@ from singer_sdk import typing as th  # JSON schema typing helpers
 
 from tap_googleads.custom_query_stream import CustomQueryStream
 from tap_googleads.dynamic_streams import (
+    AdGroupAdStream,
     AdGroupAdLabelStream,
     AdGroupsPerformance,
     AdGroupsStream,
@@ -34,6 +35,7 @@ STREAM_TYPES = [
     CampaignsStream,
     AdGroupsStream,
     AdGroupsPerformance,
+    AdGroupAdStream,
     AccessibleCustomers,
     CustomerHierarchyStream,
     CustomerLabelStream,
