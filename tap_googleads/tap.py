@@ -10,6 +10,7 @@ from tap_googleads.custom_query_stream import CustomQueryStream
 from tap_googleads.dynamic_streams import (
     AdGroupAdLabelStream,
     AdGroupAdStream,
+    AdGroupCriterionStream,
     AdGroupLabelStream,
     AdGroupsPerformance,
     AdGroupsStream,
@@ -38,6 +39,7 @@ STREAM_TYPES = [
     AdGroupsStream,
     AdGroupsPerformance,
     AdGroupAdStream,
+    AdGroupCriterionStream,
     AdGroupLabelStream,
     AccessibleCustomers,
     CustomerHierarchyStream,

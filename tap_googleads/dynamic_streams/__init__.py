@@ -2,6 +2,7 @@
 
 from tap_googleads.dynamic_streams.ad_group_ad import AdGroupAdStream
 from tap_googleads.dynamic_streams.ad_group_ad_label import AdGroupAdLabelStream
+from tap_googleads.dynamic_streams.ad_group_criterion import AdGroupCriterionStream
 from tap_googleads.dynamic_streams.ad_group_label import AdGroupLabelStream
 from tap_googleads.dynamic_streams.ad_groups import AdGroupsStream
 from tap_googleads.dynamic_streams.ad_groups_performance import AdGroupsPerformance
@@ -29,6 +30,7 @@ from tap_googleads.dynamic_streams.customer_label import CustomerLabelStream
 __all__ = [
     "AdGroupAdStream",
     "AdGroupAdLabelStream",
+    "AdGroupCriterionStream",
     "AdGroupLabelStream",
     "AdGroupsPerformance",
     "AdGroupsStream", 
