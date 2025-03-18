@@ -6,9 +6,8 @@ from tap_googleads.dynamic_query_stream import DynamicQueryStream
 class AdGroupAdStream(DynamicQueryStream):
     """Ad Group Ad stream"""
 
-    @property
-    def gaql(self):
-        return f"""
+    def _get_gaql(self):
+        return """
         SELECT
           ad_group.id,
           ad_group_ad.ad.added_by_google_ads,
@@ -147,9 +146,10 @@ class AdGroupAdStream(DynamicQueryStream):
           ad_group_ad.status,
           segments.date
         FROM ad_group_ad
-        WHERE segments.date >= {self.start_date} and segments.date <= {self.end_date}
         """
 
     name = "ad_group_ad"
     primary_keys = ["adGroup__id", "adGroupAd__ad__id"]
-    replication_key = None 
+    replication_key = "segments__date"
+    replication_method = "INCREMENTAL"
+    add_date_filter_to_query = True

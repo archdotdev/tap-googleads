@@ -22,17 +22,6 @@ class CustomQueryStream(DynamicQueryStream):
         self.name = self._custom_query["name"]
         super().__init__(*args, **kwargs)
 
-    def add_date_filter(self, fields, has_where_clause, query):
-        date_filter = (
-            f"segments.date >= {self.start_date} and segments.date <= {self.end_date}"
-        )
-        if "segments.date" not in fields:
-            fields.append("segments.date")
-        if has_where_clause:
-            self.gaql = self.gaql + f" AND {date_filter}"
-        else:
-            self.gaql = self.gaql + f" WHERE {date_filter}"
-
     @property
     def gaql(self):
         return self._gaql

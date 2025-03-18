@@ -18,7 +18,9 @@ class DynamicQueryStream(ReportsStream):
     add_date_filter_to_query = False
 
     def add_date_filter(self, fields, has_where_clause, query):
-        raise NotImplementedError
+        """Add segments.date to fields list for schema generation."""
+        if "segments.date" not in fields:
+            fields.append("segments.date")
 
     @cached_property
     def schema(self) -> dict:
@@ -154,3 +156,39 @@ class DynamicQueryStream(ReportsStream):
 
         response_data = response.json()
         return {item.get("name"): item for item in response_data.get("results", [])}
+
+    def prepare_request(self, context, next_page_token):
+        """Prepare a request object for the API call."""
+        if self.add_date_filter_to_query:
+            self._apply_date_filter_to_query(context)
+        
+        return super().prepare_request(context, next_page_token)
+
+    def _apply_date_filter_to_query(self, context):
+        """Apply date filter to the query at request time."""
+        start_date = self.get_starting_replication_key_value(context)
+        if not start_date:
+            start_date = self.start_date
+        else:
+            start_date = f"'{start_date}'"
+        query = self.gaql
+        if "WHERE" in query.upper():
+            self.gaql = query.rstrip() + f" AND segments.date >= {start_date} AND segments.date <= {self.end_date} ORDER BY segments.date ASC"
+        else:
+            self.gaql = query.rstrip() + f" WHERE segments.date >= {start_date} AND segments.date <= {self.end_date} ORDER BY segments.date ASC"
+
+    @property
+    def gaql(self):
+        """Return the GAQL query."""
+        if not hasattr(self, "_gaql"):
+            self._gaql = self._get_gaql()
+        return self._gaql
+
+    @gaql.setter
+    def gaql(self, value):
+        """Set the GAQL query."""
+        self._gaql = value
+
+    def _get_gaql(self):
+        """Return the base GAQL query. Override this in subclasses."""
+        raise NotImplementedError

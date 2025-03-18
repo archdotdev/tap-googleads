@@ -124,9 +124,6 @@ class GoogleAdsStream(RESTStream):
         params: dict = {}
         if next_page_token:
             params["pageToken"] = next_page_token
-        if self.replication_key:
-            params["sort"] = "asc"
-            params["order_by"] = self.replication_key
         return params
 
     def get_records(self, context):
