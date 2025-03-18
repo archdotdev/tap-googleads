@@ -15,6 +15,6 @@ class AdGroupsPerformance(DynamicQueryStream):
                WHERE segments.date >= {self.start_date} and segments.date <= {self.end_date}
         """
 
-    name = "adgroupsperformance"
+    name = "ad_groups_performance"
     primary_keys = ["campaign__id", "adGroup__id"]
     replication_key = None 
