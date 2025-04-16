@@ -10,7 +10,7 @@ class AdGroupsPerformance(DynamicQueryStream):
     def gaql(self):
         return f"""
         SELECT campaign.id, ad_group.id, metrics.impressions, metrics.clicks,
-               metrics.cost_micros
+               metrics.cost_micros, metrics.conversions
                FROM ad_group
                WHERE segments.date >= {self.start_date} and segments.date <= {self.end_date}
         """
