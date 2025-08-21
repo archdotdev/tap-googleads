@@ -3,7 +3,7 @@
 import unittest
 
 import responses
-import singer_sdk._singerlib as singer
+import singer_sdk.singerlib as singer
 from singer_sdk.exceptions import ConfigValidationError
 
 import tap_googleads.tests.utils as test_utils
@@ -54,7 +54,7 @@ class TestTapGoogleadsWithBaseCredentials(unittest.TestCase):
 
         responses.add(
             responses.GET,
-            "https://googleads.googleapis.com/v18/customers:listAccessibleCustomers",
+            "https://googleads.googleapis.com/v21/customers:listAccessibleCustomers",
             json=test_utils.accessible_customer_return_data,
             status=200,
         )
