@@ -53,21 +53,12 @@ class DynamicQueryStream(ReportsStream):
         }
         query_object = self.gaql
 
-        fields = []
-        table_name: str | None = None
-
         fields = query_object.select_fields.copy()
-        table_name = query_object.from_table
 
         if self.add_date_filter_to_query:
             self.add_date_filter(fields)
 
         google_schema = self.get_fields_metadata(fields)
-        google_schema[f"{table_name}.resourceName"] = {
-            "dataType": "STRING",
-            "isRepeated": False,
-        }
-        fields.append(f"{table_name}.resourceName")
 
         for field in fields:
             node = google_schema[field]
@@ -147,7 +138,7 @@ class DynamicQueryStream(ReportsStream):
           data_type,
           enum_values,
           is_repeated
-        WHERE name in ({fields_sql})
+        WHERE name IN ({fields_sql})
         """
 
         payload = {"query": query, "pageSize": len(fields)}

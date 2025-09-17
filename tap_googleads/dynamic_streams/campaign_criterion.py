@@ -13,6 +13,7 @@ class CampaignCriterionStream(DynamicQueryStream):
     def gaql(self) -> GAQL:
         return GAQL(
             "campaign.id",
+            "campaign.resource_name",
             "campaign_criterion.resource_name",
             "campaign_criterion.campaign",
             "campaign_criterion.age_range.type",

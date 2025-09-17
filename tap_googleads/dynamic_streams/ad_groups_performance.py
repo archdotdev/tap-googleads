@@ -14,7 +14,9 @@ class AdGroupsPerformance(DynamicQueryStream):
         """The GAQL query for the AdGroupsPerformance stream."""
         return GAQL(
             "campaign.id",
+            "campaign.resource_name",
             "ad_group.id",
+            "ad_group.resource_name",
             "metrics.impressions",
             "metrics.clicks",
             "metrics.cost_micros",

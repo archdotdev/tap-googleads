@@ -13,7 +13,9 @@ class CampaignBudgetStream(DynamicQueryStream):
     def gaql(self) -> GAQL:
         return GAQL(
             "customer.id",
+            "customer.resource_name",
             "campaign.id",
+            "campaign.resource_name",
             "campaign_budget.aligned_bidding_strategy_id",
             "campaign_budget.amount_micros",
             "campaign_budget.delivery_method",
