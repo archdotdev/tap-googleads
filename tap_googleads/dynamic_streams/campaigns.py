@@ -15,6 +15,7 @@ class CampaignsStream(DynamicQueryStream):
         return GAQL(
             "campaign.id",
             "campaign.name",
+            "campaign.resource_name",
             from_table="campaign",
             order_by=[
                 OrderBy("campaign.id"),

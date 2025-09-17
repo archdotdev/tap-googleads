@@ -15,6 +15,7 @@ class CampaignPerformance(DynamicQueryStream):
         return GAQL(
             "campaign.name",
             "campaign.status",
+            "campaign.resource_name",
             "segments.device",
             "segments.date",
             "metrics.impressions",

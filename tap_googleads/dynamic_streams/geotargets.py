@@ -24,6 +24,7 @@ class GeotargetsStream(DynamicQueryStream):
             "geo_target_constant.name",
             "geo_target_constant.status",
             "geo_target_constant.target_type",
+            "geo_target_constant.resource_name",
             from_table="geo_target_constant",
         )
 
