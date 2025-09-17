@@ -1,22 +1,39 @@
-"""CampaignPerformanceByLocation for Google Ads tap."""
+"""CampaignPerformance for Google Ads tap."""
 
+import functools
+
+from tap_googleads._gaql import GAQL
 from tap_googleads.dynamic_query_stream import DynamicQueryStream
 
 
 class CampaignPerformance(DynamicQueryStream):
-    """Campaign Performance"""
+    """Campaign Performance."""
 
-    @property
-    def gaql(self):
-        return f"""
-    SELECT campaign.name, campaign.status, segments.device, segments.date, metrics.impressions, metrics.clicks, metrics.ctr, metrics.average_cpc, metrics.cost_micros FROM campaign WHERE segments.date >= {self.start_date} and segments.date <= {self.end_date}
-    """
+    @functools.cached_property
+    def gaql(self) -> GAQL:
+        """The GAQL query for the CampaignPerformance stream."""
+        return GAQL(
+            "campaign.name",
+            "campaign.status",
+            "segments.device",
+            "segments.date",
+            "metrics.impressions",
+            "metrics.clicks",
+            "metrics.ctr",
+            "metrics.average_cpc",
+            "metrics.cost_micros",
+            from_table="campaign",
+            where_clause=[
+                f"segments.date >= {self.start_date}",
+                f"segments.date <= {self.end_date}",
+            ],
+        )
 
     name = "campaign_performance"
-    primary_keys = [
+    primary_keys = (
         "campaign__name",
         "campaign__status",
         "segments__date",
         "segments__device",
-    ]
+    )
     replication_key = None

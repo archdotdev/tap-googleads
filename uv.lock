@@ -810,12 +810,12 @@ wheels = [
 ]
 
 [[package]]
-name = "sqlparse"
-version = "0.5.3"
+name = "sqlglot"
+version = "27.15.3"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/e5/40/edede8dd6977b0d3da179a342c198ed100dd2aba4be081861ee5911e4da4/sqlparse-0.5.3.tar.gz", hash = "sha256:09f67787f56a0b16ecdbde1bfc7f5d9c3371ca683cfeaa8e6ff60b4807ec9272", size = 84999, upload-time = "2024-12-10T12:05:30.728Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/85/90/ad2d0d63d289b010e482cdf05521a11e12a5c065d39610a9dfe1971d5b7a/sqlglot-27.15.3.tar.gz", hash = "sha256:8235cf2e5f5906c9b776c732ac57d7d97550644278888a508b0d01bfc7bf7a8b", size = 5469854, upload-time = "2025-09-17T17:05:44.134Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/a9/5c/bfd6bd0bf979426d405cc6e71eceb8701b148b16c21d2dc3c261efc61c7b/sqlparse-0.5.3-py3-none-any.whl", hash = "sha256:cf2196ed3418f3ba5de6af7e82c694a9fbdbfecccdfc72e281548517081f16ca", size = 44415, upload-time = "2024-12-10T12:05:27.824Z" },
+    { url = "https://files.pythonhosted.org/packages/d7/ab/ea0e951c35319f124ab17bee40a5066953f1d2e1e37d7fecfe484b69bccc/sqlglot-27.15.3-py3-none-any.whl", hash = "sha256:579f1f41ee835a42fb4a5236807c36e3650dbaea226f6c39a344c77b9e85bc75", size = 517793, upload-time = "2025-09-17T17:05:41.369Z" },
 ]
 
 [[package]]
@@ -826,7 +826,7 @@ dependencies = [
     { name = "pyhumps" },
     { name = "requests" },
     { name = "singer-sdk" },
-    { name = "sqlparse" },
+    { name = "sqlglot" },
 ]
 
 [package.dev-dependencies]
@@ -842,7 +842,7 @@ requires-dist = [
     { name = "pyhumps", specifier = ">=3.8.0,<4" },
     { name = "requests", specifier = ">=2.25.1,<3" },
     { name = "singer-sdk", specifier = "~=0.49.0" },
-    { name = "sqlparse", specifier = ">=0.5.3,<0.6" },
+    { name = "sqlglot", specifier = ">=27.15.3" },
 ]
 
 [package.metadata.requires-dev]

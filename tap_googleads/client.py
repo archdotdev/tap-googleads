@@ -2,12 +2,13 @@
 
 from datetime import datetime
 from functools import cached_property
-from typing import Any, Dict, Optional
+from typing import Any
 
 import requests
 from singer_sdk.authenticators import OAuthAuthenticator
 from singer_sdk.streams import RESTStream
 
+from tap_googleads._gaql import GAQL
 from tap_googleads.auth import GoogleAdsAuthenticator, ProxyGoogleAdsAuthenticator
 
 
@@ -44,9 +45,9 @@ class GoogleAdsStream(RESTStream):
                 f"Error {error['code']}: {error['message']} ({error['status']})"
             )
 
-            if "details" in error and error["details"]:
+            if error.get("details"):
                 detail = error["details"][0]
-                if "errors" in detail and detail["errors"]:
+                if detail.get("errors"):
                     error_detail = detail["errors"][0]
                     detailed_message = error_detail.get("message", "")
                     request_id = detail.get("requestId", "")
@@ -65,10 +66,10 @@ class GoogleAdsStream(RESTStream):
 
         client_id = self.config.get("oauth_credentials", {}).get("client_id", None)
         client_secret = self.config.get("oauth_credentials", {}).get(
-            "client_secret", None
+            "client_secret", None,
         )
         refresh_token = self.config.get("oauth_credentials", {}).get(
-            "refresh_token", None
+            "refresh_token", None,
         )
 
         auth_url = base_auth_url + f"?refresh_token={refresh_token}"
@@ -118,8 +119,8 @@ class GoogleAdsStream(RESTStream):
         return headers
 
     def get_url_params(
-        self, context: Optional[dict], next_page_token: Optional[Any]
-    ) -> Dict[str, Any]:
+        self, context: dict | None, next_page_token: Any | None,
+    ) -> dict[str, Any]:
         """Return a dictionary of values to be used in URL parameterization."""
         params: dict = {}
         if next_page_token:
@@ -133,14 +134,15 @@ class GoogleAdsStream(RESTStream):
             self.logger.warning(e)
 
     @property
-    def gaql(self):
+    def gaql(self) -> GAQL:
+        """The GAQL query for this stream."""
         raise NotImplementedError
 
     @property
     def path(self) -> str:
         # Paramas
         path = "/customers/{customer_id}/googleAds:search?query="
-        return path + self.gaql
+        return path + str(self.gaql)
 
     @cached_property
     def start_date(self):
@@ -157,7 +159,7 @@ class GoogleAdsStream(RESTStream):
 
         if customer_ids is None:
             if customer_id is None:
-                return
+                return None
             customer_ids = [customer_id]
 
         return list(map(_sanitise_customer_id, customer_ids))
@@ -167,7 +169,7 @@ class GoogleAdsStream(RESTStream):
         login_customer_id = self.config.get("login_customer_id")
 
         if login_customer_id is None:
-            return
+            return None
 
         return _sanitise_customer_id(login_customer_id)
 

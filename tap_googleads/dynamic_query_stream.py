@@ -1,11 +1,11 @@
 from functools import cached_property
-from typing import Any, Dict, List
+from typing import Any
 
 import humps
 import requests
-import sqlparse
 from singer_sdk.helpers._flattening import flatten_record
 
+from tap_googleads._gaql import GAQL, OrderBy
 from tap_googleads.streams import ReportsStream
 
 DATE_TYPES = ("segments.date", "segments.month", "segments.quarter", "segments.week")
@@ -17,7 +17,7 @@ class DynamicQueryStream(ReportsStream):
     records_jsonpath = "$.results[*]"
     add_date_filter_to_query = False
 
-    def add_date_filter(self, fields, has_where_clause, query):
+    def add_date_filter(self, fields: list[str]) -> None:
         """Add segments.date to fields list for schema generation."""
         if "segments.date" not in fields:
             fields.append("segments.date")
@@ -28,8 +28,14 @@ class DynamicQueryStream(ReportsStream):
 
         Dynamically detect the json schema for the stream.
         This is evaluated prior to any records being retrieved.
+
+        Returns:
+            dict: Dictionary of record schema.
+
+        Raises:
+            Exception: If the GAQL query is invalid.
         """
-        local_json_schema = {
+        local_json_schema: dict[str, Any] = {
             "type": "object",
             "properties": {},
             "additionalProperties": True,
@@ -45,33 +51,32 @@ class DynamicQueryStream(ReportsStream):
             "INT32": "integer",
             "DOUBLE": "number",
         }
-        try:
-            query_object = sqlparse.parse(self.gaql)[0]
-        except ValueError:
-            message = f"The GAQL query {self.name} failed. Validate your GAQL query with the Google Ads query validator. https://developers.google.com/google-ads/api/fields/v19/query_validator"
-            raise Exception(message)
+        query_object = self.gaql
 
         fields = []
-        has_where_clause = False
-        for token in query_object.tokens:
-            if isinstance(token, sqlparse.sql.IdentifierList):
-                fields = [field.strip() for field in token.value.split(",")]
-            if isinstance(token, sqlparse.sql.Where):
-                has_where_clause = True
+        table_name: str | None = None
+
+        fields = query_object.select_fields.copy()
+        table_name = query_object.from_table
 
         if self.add_date_filter_to_query:
-            self.add_date_filter(fields, has_where_clause, query_object)
+            self.add_date_filter(fields)
 
         google_schema = self.get_fields_metadata(fields)
+        google_schema[f"{table_name}.resourceName"] = {
+            "dataType": "STRING",
+            "isRepeated": False,
+        }
+        fields.append(f"{table_name}.resourceName")
 
         for field in fields:
             node = google_schema[field]
             google_data_type = node.get("dataType", "")
-            field_value = {
+            field_value: dict[str, Any] = {
                 "type": [
                     google_datatype_mapping.get(google_data_type, "string"),
                     "null",
-                ]
+                ],
             }
 
             if google_data_type == "DATE" and field in DATE_TYPES:
@@ -92,6 +97,7 @@ class DynamicQueryStream(ReportsStream):
             local_json_schema["properties"][field_name] = field_value
         # This is always present in the response
         local_json_schema["properties"]["customer_id"] = {"type": ["string", "null"]}
+        local_json_schema["properties"]["parent_customer_id"] = {"type": ["string", "null"]}
         return local_json_schema
 
     def _cast_value(self, key: str, value: Any) -> Any:
@@ -102,7 +108,7 @@ class DynamicQueryStream(ReportsStream):
                 return int(value)
         return value
 
-    def post_process(  # noqa: PLR6301
+    def post_process(
         self,
         row,
         context=None,
@@ -118,11 +124,12 @@ class DynamicQueryStream(ReportsStream):
 
         return flattened_row
 
-    def get_fields_metadata(self, fields: List[str]) -> Dict[str, Dict[str, Any]]:
-        """
-        Get field metadata for gaql query columns.
+    def get_fields_metadata(self, fields: list[str]) -> dict[str, dict[str, Any]]:
+        """Get field metadata for gaql query columns.
 
-        Issue Google API request to get detailed information on data type for gaql query columns.
+        Issue Google API request to get detailed information on data type for gaql query
+        columns.
+
         Uses direct REST API calls.
 
         Args:
@@ -151,7 +158,7 @@ class DynamicQueryStream(ReportsStream):
             "Content-Type": "application/json",
             "developer-token": self.config["developer_token"],
         }
-        response = requests.post(base_url, json=payload, headers=headers)
+        response = requests.post(base_url, json=payload, headers=headers, timeout=30)
         response.raise_for_status()
 
         response_data = response.json()
@@ -170,36 +177,13 @@ class DynamicQueryStream(ReportsStream):
             return
 
         start_date = self.get_starting_replication_key_value(context)
-        if not start_date:
-            start_date = self.start_date
-        else:
-            start_date = f"'{start_date}'"
+        start_date = self.start_date if not start_date else f"'{start_date}'"
         query = self.gaql
-        if "WHERE" in query.upper():
-            self.gaql = (
-                query.rstrip()
-                + f" AND segments.date >= {start_date} AND segments.date <= {self.end_date} ORDER BY segments.date ASC"
-            )
-        else:
-            self.gaql = (
-                query.rstrip()
-                + f" WHERE segments.date >= {start_date} AND segments.date <= {self.end_date} ORDER BY segments.date ASC"
-            )
-
+        order_by = OrderBy("segments.date", descending=False)
+        query.where(f"segments.date >= {start_date}").where(f"segments.date <= {self.end_date}").order_by(order_by)
         self._date_filter_applied = True
 
     @property
-    def gaql(self):
-        """Return the GAQL query."""
-        if not hasattr(self, "_gaql"):
-            self._gaql = self._get_gaql()
-        return self._gaql
-
-    @gaql.setter
-    def gaql(self, value):
-        """Set the GAQL query."""
-        self._gaql = value
-
-    def _get_gaql(self):
-        """Return the base GAQL query. Override this in subclasses."""
+    def gaql(self) -> GAQL:
+        """The GAQL query for this stream."""
         raise NotImplementedError

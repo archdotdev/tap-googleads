@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 import datetime
+import functools
 from http import HTTPStatus
 
+from tap_googleads._gaql import GAQL
 from tap_googleads.client import ResumableAPIError
 from tap_googleads.dynamic_query_stream import DynamicQueryStream
 
@@ -14,31 +16,33 @@ class ClickViewReportStream(DynamicQueryStream):
 
     date: datetime.date
 
-    @property
-    def gaql(self) -> str:
-        return f"""
-        SELECT
-            click_view.gclid
-            , customer.id
-            , click_view.ad_group_ad
-            , ad_group.id
-            , ad_group.name
-            , campaign.id
-            , campaign.name
-            , segments.ad_network_type
-            , segments.device
-            , segments.date
-            , segments.slot
-            , metrics.clicks
-            , segments.click_type
-            , click_view.keyword
-            , click_view.keyword_info.match_type
-        FROM click_view
-        WHERE segments.date = '{self.date.isoformat()}'
-        """
+    @functools.cached_property
+    def gaql(self) -> GAQL:
+        return GAQL(
+            "click_view.gclid",
+            "click_view.gclid",
+            "customer.id",
+            "click_view.ad_group_ad",
+            "ad_group.id",
+            "ad_group.name",
+            "campaign.id",
+            "campaign.name",
+            "segments.ad_network_type",
+            "segments.device",
+            "segments.date",
+            "segments.slot",
+            "metrics.clicks",
+            "segments.click_type",
+            "click_view.keyword",
+            "click_view.keyword_info.match_type",
+            from_table="click_view",
+            where_clause=[
+                f"segments.date = '{self.date.isoformat()}'",
+            ],
+        )
 
     name = "click_view_report"
-    primary_keys = [
+    primary_keys = (
         "clickView__gclid",
         "clickView__keyword",
         "clickView__keywordInfo__matchType",
@@ -49,7 +53,7 @@ class ClickViewReportStream(DynamicQueryStream):
         "segments__adNetworkType",
         "segments__slot",
         "date",
-    ]
+    )
     replication_key = "date"
 
     def post_process(self, row, context):
@@ -90,19 +94,14 @@ class ClickViewReportStream(DynamicQueryStream):
             records = list(super().request_records(context))
 
             if not records:
-                self._increment_stream_state(
-                    {"date": self.date.isoformat()}, context=self.context
-                )
+                self._increment_stream_state({"date": self.date.isoformat()}, context=self.context)
 
             yield from records
 
     def validate_response(self, response):
         if response.status_code == HTTPStatus.FORBIDDEN:
             error = response.json()["error"]["details"][0]["errors"][0]
-            msg = (
-                "Click view report not accessible to customer "
-                f"'{self.context['customer_id']}': {error['message']}"
-            )
+            msg = f"Click view report not accessible to customer '{self.context['customer_id']}': {error['message']}"
             raise ResumableAPIError(msg, response)
 
         super().validate_response(response)
