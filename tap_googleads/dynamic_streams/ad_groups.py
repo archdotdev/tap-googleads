@@ -38,6 +38,7 @@ class AdGroupsStream(DynamicQueryStream):
             "ad_group.campaign",
             "ad_group.base_ad_group",
             "ad_group.ad_rotation_mode",
+            "ad_group.resource_name",
             from_table="ad_group",
         )
 

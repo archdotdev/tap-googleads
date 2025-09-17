@@ -13,6 +13,7 @@ class AudienceStream(DynamicQueryStream):
     def gaql(self) -> GAQL:
         return GAQL(
             "customer.id",
+            "customer.resource_name",
             "audience.description",
             "audience.dimensions",
             "audience.exclusion_dimension",

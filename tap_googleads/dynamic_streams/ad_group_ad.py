@@ -13,6 +13,7 @@ class AdGroupAdStream(DynamicQueryStream):
     def gaql(self) -> GAQL:
         return GAQL(
             "ad_group.id",
+            "ad_group.resource_name",
             "ad_group_ad.ad.added_by_google_ads",
             "ad_group_ad.ad.app_ad.descriptions",
             "ad_group_ad.ad.app_ad.headlines",

@@ -13,6 +13,7 @@ class AdGroupCriterionStream(DynamicQueryStream):
     def gaql(self) -> GAQL:
         return GAQL(
             "ad_group.id",
+            "ad_group.resource_name",
             "ad_group_criterion.ad_group",
             "ad_group_criterion.age_range.type",
             "ad_group_criterion.app_payment_model.type",

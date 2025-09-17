@@ -13,7 +13,9 @@ class AdGroupAdLabelStream(DynamicQueryStream):
     def gaql(self) -> GAQL:
         return GAQL(
             "ad_group.id",
+            "ad_group.resource_name",
             "ad_group_ad.ad.id",
+            "ad_group_ad.resource_name",
             "ad_group_ad.ad.resource_name",
             "ad_group_ad_label.resource_name",
             "label.name",

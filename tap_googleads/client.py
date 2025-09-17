@@ -1,8 +1,10 @@
 """REST client handling, including GoogleAdsStream base class."""
 
+from __future__ import annotations
+
 from datetime import datetime
 from functools import cached_property
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import requests
 from singer_sdk.authenticators import OAuthAuthenticator
@@ -11,6 +13,9 @@ from singer_sdk.streams import RESTStream
 from tap_googleads._gaql import GAQL
 from tap_googleads.auth import GoogleAdsAuthenticator, ProxyGoogleAdsAuthenticator
 
+if TYPE_CHECKING:
+    import requests
+    from singer_sdk.helpers.types import Context
 
 class ResumableAPIError(Exception):
     def __init__(self, message: str, response: requests.Response) -> None:
@@ -41,9 +46,7 @@ class GoogleAdsStream(RESTStream):
         base_msg = super().response_error_message(response)
         try:
             error = response.json()["error"]
-            main_message = (
-                f"Error {error['code']}: {error['message']} ({error['status']})"
-            )
+            main_message = f"Error {error['code']}: {error['message']} ({error['status']})"
 
             if error.get("details"):
                 detail = error["details"][0]
@@ -66,10 +69,12 @@ class GoogleAdsStream(RESTStream):
 
         client_id = self.config.get("oauth_credentials", {}).get("client_id", None)
         client_secret = self.config.get("oauth_credentials", {}).get(
-            "client_secret", None,
+            "client_secret",
+            None,
         )
         refresh_token = self.config.get("oauth_credentials", {}).get(
-            "refresh_token", None,
+            "refresh_token",
+            None,
         )
 
         auth_url = base_auth_url + f"?refresh_token={refresh_token}"
@@ -118,16 +123,14 @@ class GoogleAdsStream(RESTStream):
         headers["login-customer-id"] = self._get_login_customer_id(self.context)
         return headers
 
-    def get_url_params(
-        self, context: dict | None, next_page_token: Any | None,
-    ) -> dict[str, Any]:
+    def get_url_params(self, context: Context | None, next_page_token: Any | None) -> dict[str, Any]:
         """Return a dictionary of values to be used in URL parameterization."""
         params: dict = {}
         if next_page_token:
             params["pageToken"] = next_page_token
         return params
 
-    def get_records(self, context):
+    def get_records(self, context: Context | None):
         try:
             yield from super().get_records(context)
         except ResumableAPIError as e:
@@ -145,15 +148,15 @@ class GoogleAdsStream(RESTStream):
         return path + str(self.gaql)
 
     @cached_property
-    def start_date(self):
+    def start_date(self) -> str:
         return datetime.fromisoformat(self.config["start_date"]).strftime(r"'%Y-%m-%d'")
 
     @cached_property
-    def end_date(self):
+    def end_date(self) -> str:
         return datetime.fromisoformat(self.config["end_date"]).strftime(r"'%Y-%m-%d'")
 
     @cached_property
-    def customer_ids(self):
+    def customer_ids(self) -> list[str] | None:
         customer_ids = self.config.get("customer_ids")
         customer_id = self.config.get("customer_id")
 
