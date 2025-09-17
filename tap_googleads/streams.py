@@ -2,15 +2,18 @@
 
 from __future__ import annotations
 
+import functools
 from http import HTTPStatus
 from pathlib import Path
 from typing import TYPE_CHECKING, Iterable
 
 from singer_sdk import typing as th  # JSON Schema typing helpers
 
+from tap_googleads._gaql import GAQL
 from tap_googleads.client import GoogleAdsStream, ResumableAPIError
 
 if TYPE_CHECKING:
+    import requests
     from singer_sdk.helpers.types import Context, Record
 
 SCHEMAS_DIR = Path(__file__).parent / Path("./schemas")
@@ -22,7 +25,7 @@ class AccessibleCustomers(GoogleAdsStream):
     rest_method = "GET"
     path = "/customers:listAccessibleCustomers"
     name = "accessible_customers"
-    primary_keys = ["resourceNames"]
+    primary_keys = ("resourceNames",)
     replication_key = None
     schema = th.PropertiesList(
         th.Property("resourceNames", th.ArrayType(th.StringType)),
@@ -54,30 +57,31 @@ class CustomerHierarchyStream(GoogleAdsStream):
     Inspiration from Google here
     https://developers.google.com/google-ads/api/docs/account-management/get-account-hierarchy.
 
-    This stream is stictly to be the Parent Stream, to let all Child Streams
+    This stream is strictly to be the Parent Stream, to let all Child Streams
     know when to query the down stream apps.
 
     """
 
-    @property
-    def gaql(self):
-        return """
-	SELECT
-          customer_client.client_customer,
-          customer_client.level,
-          customer_client.status,
-          customer_client.manager,
-          customer_client.descriptive_name,
-          customer_client.currency_code,
-          customer_client.time_zone,
-          customer_client.id
-        FROM customer_client
-        WHERE customer_client.level <= 1
-	"""
+    @functools.cached_property
+    def gaql(self) -> GAQL:
+        return GAQL(
+            "customer_client.client_customer",
+            "customer_client.level",
+            "customer_client.status",
+            "customer_client.manager",
+            "customer_client.descriptive_name",
+            "customer_client.currency_code",
+            "customer_client.time_zone",
+            "customer_client.id",
+            from_table="customer_client",
+            where_clause=[
+                "customer_client.level <= 1",
+            ],
+        )
 
     records_jsonpath = "$.results[*]"
     name = "customer_hierarchy"
-    primary_keys = ["customerClient__id"]
+    primary_keys = ("customerClient__id",)
     replication_key = None
     parent_stream_type = AccessibleCustomers
     schema = th.PropertiesList(
@@ -99,9 +103,9 @@ class CustomerHierarchyStream(GoogleAdsStream):
         ),
     ).to_dict()
 
-    seen_customer_ids = set()
+    seen_customer_ids: set[str] = set()
 
-    def validate_response(self, response):
+    def validate_response(self, response: requests.Response):
         if response.status_code == HTTPStatus.FORBIDDEN:
             msg = self.response_error_message(response)
             raise ResumableAPIError(msg, response)
